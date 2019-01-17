@@ -47,3 +47,9 @@ ENV LC_MESSAGES en_ZA.UTF-8
 
 # Changing back to the airflow user
 USER airflow
+
+# Using the local executer, as all the action should actually be in Docker
+ENV EXECUTOR Local
+
+# Creating a DAGs dir in the airflow user's directory
+RUN mkdir /usr/local/airflow/dags
