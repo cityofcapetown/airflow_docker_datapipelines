@@ -24,13 +24,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
   pip3 install docker
 
 # Setting the timezone
-ENV TZ="Africa/Johannesburg"
+ENV TZ "Africa/Johannesburg"
 RUN echo $TZ > /etc/timezone && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
   rm /etc/localtime && \
   ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
   dpkg-reconfigure -f noninteractive tzdata
+
+ENV AIRFLOW__CORE__DEFAULT_TIMEZONE "Africa/Johannesburg"
 
 # Define en_ZA
 RUN DEBIAN_FRONTEND=noninteractive \
