@@ -36,10 +36,11 @@ ENV AIRFLOW__CORE__DEFAULT_TIMEZONE "Africa/Johannesburg"
 
 # Define en_ZA
 RUN DEBIAN_FRONTEND=noninteractive \
+  sed --in-place '/en_ZA.UTF-8/s/^# //' /etc/locale.gen && \
   locale-gen en_ZA && \
   locale-gen en_ZA.UTF-8 && \
   dpkg-reconfigure --frontend=noninteractive locales && \
-  update-locale LANG=en_ZA.UTF-8
+  update-locale
 
 ENV LANGUAGE en_ZA.UTF-8
 ENV LANG en_ZA.UTF-8
