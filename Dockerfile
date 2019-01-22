@@ -57,3 +57,6 @@ RUN mkdir /usr/local/airflow/dags
 # Using a local executor, and unloading the examples
 ENV EXECUTOR "Local"
 ENV LOAD_EX "n"
+
+# Using the local hostname, as retrieving the FQDN takes a long time
+ENV AIRFLOW__CORE__HOSTNAME_CALLABLE "socket:gethostname"
