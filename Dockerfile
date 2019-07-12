@@ -4,6 +4,8 @@ LABEL authors="Gordon Inggs and Riaz Arbi"
 
 # Changing back to root
 USER root
+RUN echo AIRFLOW_VERSION
+ARG AIRFLOW_VERSION=1.10.3
 
 # Adding utility packages
 RUN set -ex && \
