@@ -1,27 +1,16 @@
 FROM docker.io/puckel/docker-airflow
 
-LABEL authors="Gordon Inggs"
+LABEL authors="Gordon Inggs and Riaz Arbi"
 
-# Changing back to root to install a few things
+# Changing back to root
 USER root
 
-# Utility packages
+# Adding utility packages
 RUN set -ex && \
   apt-get update -yqq && \
   apt-get upgrade -yqq && \
   apt-get install -yqq \
-  vim \
-  nano \
-  htop \
-  bash \
-  wget \
-  apt-utils \
-  git \
-  sudo
-
-# Installing Docker Python bindings
-RUN DEBIAN_FRONTEND=noninteractive \
-  pip3 install docker
+  apt-utils 
 
 # Setting the timezone
 ENV TZ "Africa/Johannesburg"
@@ -48,15 +37,12 @@ ENV LC_ALL en_ZA.UTF-8
 ENV LC_CTYPE en_ZA.UTF-8
 ENV LC_MESSAGES en_ZA.UTF-8
 
+# Installing kubernetes-specific python packages
+RUN pip install apache-airflow[kubernetes]==${AIRFLOW_VERSION} \
+    && pip install Flash-OAuthlib
+
 # Changing back to the airflow user
 USER airflow
 
-# Creating a DAGs dir in the airflow user's directory
-RUN mkdir /usr/local/airflow/dags
-
-# Using a local executor, and unloading the examples
-ENV EXECUTOR "Local"
-ENV LOAD_EX "n"
-
-# Using the local hostname, as retrieving the FQDN takes a long time
-ENV AIRFLOW__CORE__HOSTNAME_CALLABLE "socket:gethostname"
+# Unload examples
+#ENV LOAD_EX "n"
