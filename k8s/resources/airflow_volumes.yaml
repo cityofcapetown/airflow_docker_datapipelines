@@ -1,0 +1,32 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: airflow-dags
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 1Gi
+  nfs:
+    server: 172.29.100.44
+    path: "/data/nfs/airflow-dags"
+  claimRef:
+    namespace: airflow
+    name: airflow-dags
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: airflow-logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 10Gi
+  nfs:
+    server: 172.29.100.44
+    path: "/data/nfs/airflow-logs"
+  claimRef:
+    namespace: airflow
+    name: airflow-logs
+---
