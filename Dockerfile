@@ -47,4 +47,4 @@ RUN pip install apache-airflow[kubernetes]==${AIRFLOW_VERSION} \
 USER airflow
 
 # Unload examples
-#ENV LOAD_EX "n"
+ENV LOAD_EX "n"
