@@ -12,7 +12,7 @@ RUN set -ex && \
   apt-get update -yqq && \
   apt-get upgrade -yqq && \
   apt-get install -yqq \
-  apt-utils git nano
+  apt-utils 
 
 # Setting the timezone
 ENV TZ "Africa/Johannesburg"
