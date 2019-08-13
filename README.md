@@ -1,9 +1,13 @@
-# Airflow with Docker
+# Airflow with ~~Docker~~ Kubernetes
 This image builds upon [Puckel's Airflow image](https://github.com/puckel/docker-airflow), specialising it for use as 
-controller of tasks being run in standalone Docker containers (using the Python Docker bindings).
+controller of tasks being run ~~standalone Docker containers (using the Python Docker bindings)~~ in a Kubernetes cluster.
 
-It uses a LocalExecutor to allow for task parallelism, doesn't laod the example, and adds a few utilities as well as
-localising to South Africa, otherwise the config is left as the defaults.
+Please note these instructions are for launching the Docker container standalone. Please head over to the [Kubernetes README](./k8s/README.md)
+to go on the exciting journey of deploying this container as a service within a Kubernetes cluster (which Airflow will
+also use to run tasks).
+
+This airflow configuration uses a LocalExecutor to allow for task parallelism, doesn't load the examples, and adds a few
+utilities as well as localising to South Africa, otherwise the config is left to the defaults.
 
 On the last point, I would be open to a pull request to make this optional as I realise not everyone is lucky enough to
 live in SA.
@@ -18,15 +22,12 @@ live in SA.
              --name airflow-postgres \
              -d postgres
   ```
-2. Now, actually start the airflow container (**NB it's a privileged container**):
+2. Now, actually start the airflow container:
   ```bash
   docker run -e POSTGRES_HOST=<State DB host name> \
              -e POSTGRES_PORT=<State DB port number> \
-             --name docker-airflow \
-             -v /var/run/docker.sock:/var/run/docker.sock:rw \
+             --name k8s-airflow \
              -p <Host port for WUI>:8080 \
-             -p <Docker API port>:8793 \
-             --privileged \
              --restart always \
              -d cityofcapetown/airflow
   ```
