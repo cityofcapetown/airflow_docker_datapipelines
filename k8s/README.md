@@ -219,3 +219,44 @@ trying to launch into the default namespace.
 * **All three tasks are running!**: Oh dear, this means that airflow can
 run pods willy-nilly. This probably means your permissions have been overly
 relaxed.
+
+## 6. Turning on Basic Auth for the WUI (Optional)
+If you're exposing airflow to your whole organisation, you probably want
+to restrict access to the WUI.
+
+In `airflow-values.yaml`, pass in configuration to turn on 
+authentication and set the backend, i.e.
+```yaml
+airflow:
+  config:
+    AIRFLOW__WEBSERVER__AUTHENTICATE: True
+    AIRFLOW__WEBSERVER__AUTH_BACKEND: "airflow.contrib.auth.backends.password_auth"
+```
+
+After you deploy, when navigating to the WUI, you should be greeted by a
+login page demanding credentials.
+
+To generate a user, you will need to run commands on one of the airflow 
+containers directly (so as to inject values into the DB directly). The
+script [airflow_basic_auth_create_user.py](./resources/airflow_basic_auth_create_user.py)
+creates such a user. I will leave it as an exercise to the reader as how
+to get that script into the container (probably easiest to smuggle it
+in via the DAG PVC).
+
+
+Script use: 
+1. Set the SQL Alchemy Env variable: `export AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:airflow@"$AIRFLOW_POSTGRESQL_SERVICE_HOST":"$AIRFLOW_POSTGRESQL_SERVICE_PORT"/airflow`
+2. Run the script: `python airflow_basic_auth_create_user.py <username> <user email> <password>`
+
+Result:
+```
+[2019-08-14 21:39:09,695] {{settings.py:182}} INFO - settings.configure_orm(): U
+sing pool settings. pool_size=5, pool_recycle=1800, pid=423                     
+/usr/local/lib/python3.7/site-packages/psycopg2/__init__.py:144: UserWarning: Th
+e psycopg2 wheel package will be renamed from release 2.8; in order to keep inst
+alling from binary please use "pip install psycopg2-binary" instead. For details
+ see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.    
+  """) 
+```
+
+And you should be able to log in with the creds created.
