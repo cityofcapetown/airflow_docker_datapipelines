@@ -41,6 +41,7 @@ ENV LC_MESSAGES en_ZA.UTF-8
 
 # Installing kubernetes-specific python packages
 RUN pip install apache-airflow[kubernetes]==${AIRFLOW_VERSION} \
+    && pip install flask_bcrypt \
     && pip install Flask-OAuthlib
 
 # Changing back to the airflow user
