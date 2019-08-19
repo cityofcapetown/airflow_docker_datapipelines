@@ -8,6 +8,8 @@ Kubernetes cluster to run work via the
 [KubernetesExecutor](https://airflow.readthedocs.io/en/stable/kubernetes.html#kubernetes-executor),
 which creates pods to execute other types of operators (e.g. Bash, Python).
 
+Something that is not immediately clear in the documentation is that the KubernetesExecutor is not necessary to use airflow to schedule the orchestration of pods in a kubernetes cluster. 
+
 ## Assumptions
 * Kubernetes is up and running (`systemctl status kubelet`)
 * You have `kubectl` installed and talking to the cluster
@@ -51,7 +53,11 @@ sentience, goes rogue and tries to kill us all, it can only do so in the
 
 ## 2. DAG and Log Persistence
 When deploying Airflow as a service, the `dags` and `logs` directories
-need to be shared between the various components.
+need to be shared between the various component pods. It is also
+desirable that these directories are persistence, so that worst comes to
+worst, you can rebuild without too much loss of state.
+
+You **can optionally** do this:
 
 * Creating persistent volumes. You want to do this is if you want 
 control of exactly where your `dags` and `logs` directories live.
@@ -61,8 +67,11 @@ Command: `kubectl apply -f resources/airflow_volumes.yaml`.
 You are probably going to have to change the `nfs.server` and `nfs.path`
 keys.
 
-**NBx2** if you decide to the above, you probably want to think carefully about why
-you want such fine-grained control.
+**NBx2** if you decide to go with the above, you probably want to think 
+carefully about why you want such fine-grained control of where your 
+`dags` and `logs` volumes are ending up.
+
+You **have** to do this:
 
 * Creating persistent volume claims. You want to do this so that your
 `dags` and `logs` directories persist between airflow deployments:
@@ -78,9 +87,13 @@ persistentvolumeclaim/airflow-logs created
 There isn't anything to do here, other than review and change some of
 the values as required in [the supplied file](./resources/airflow-values.yaml).
 
-Of interest:
-* `airflow.fernetKey` - generate something strong for this.
-* `ingress.web.path` - change this to whatever path you would like airflow on.
+You really should generate a new fernet key for security purposes. You only 
+need to change the others if you want to deviate from our defaults:
+
+* `airflow.fernetKey` - generate something strong for this, using 
+`echo $(openssl rand -hex 32)`
+* `ingress.web.path` - change this to whatever path you would like 
+airflow to be served in traefik.
 * `postgres.*` vs `redis.*` - these control the backend used.
 * `workers.enabled` - enable this if you want persistent workers, which
 is not what we're doing here.

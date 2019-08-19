@@ -2,14 +2,16 @@
 This image builds upon [Puckel's Airflow image](https://github.com/puckel/docker-airflow), specialising it for use as 
 controller of tasks being run ~~standalone Docker containers (using the Python Docker bindings)~~ in a Kubernetes cluster.
 
-Please note these instructions are for launching the Docker container standalone. Please head over to the [Kubernetes README](./k8s/README.md)
+Please note the instructions in this README are for launching this Docker image standalone (i.e. non-Kubernetes). Please head over to the [Kubernetes README](./k8s/README.md)
 to go on the exciting journey of deploying this container as a service within a Kubernetes cluster (which Airflow will
 also use to run tasks).
 
 This airflow configuration uses a LocalExecutor to allow for task parallelism, doesn't load the examples, and adds a few
 utilities as well as localising to South Africa, otherwise the config is left to the defaults.
 
-On the last point, I would be open to a pull request to make this optional as I realise not everyone is lucky enough to
+The reason [the **LocalExecutor**](https://airflow.apache.org/_modules/airflow/executors/local_executor.html) is used is that our intended mode of execution is to offload work directly to Docker or Kubernetes, and so avoid the complication of maintaining a separate work broker.
+
+On the timezone point, I would be open to a pull request to make this optional as I realise not everyone is lucky enough to
 live in SA.
 
 ## Getting Started
