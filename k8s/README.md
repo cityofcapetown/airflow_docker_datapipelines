@@ -17,6 +17,11 @@ Something that is not immediately clear in the documentation is that the Kuberne
 * You're using a NFS storage client with `StorageClassName='nfs-client'`
 * You're using traefik as your frontend service reverse proxy
 
+## Automagic setup
+[This script](./deploy-airflow.sh) executes steps 1-4 without intervention,
+but **cave emptor** - it assumes everything above. It is almost certainly 
+a better idea to manually work through the instructions below.
+
 ## 1. Namespace and Role
 First up, we need to handle the permissions end of things.
 
@@ -91,7 +96,7 @@ You really should generate a new fernet key for security purposes. You only
 need to change the others if you want to deviate from our defaults:
 
 * `airflow.fernetKey` - generate something strong for this, using 
-`echo $(openssl rand -hex 32)`
+`echo $(openssl rand -base64 32 | tr -d "\n")`
 * `ingress.web.path` - change this to whatever path you would like 
 airflow to be served in traefik.
 * `postgres.*` vs `redis.*` - these control the backend used.
