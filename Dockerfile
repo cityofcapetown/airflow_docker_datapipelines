@@ -1,4 +1,4 @@
-FROM docker.io/puckel/docker-airflow
+FROM docker.io/puckel/docker-airflow:1.10.3
 
 LABEL authors="Gordon Inggs and Riaz Arbi"
 
