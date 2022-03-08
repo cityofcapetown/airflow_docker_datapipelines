@@ -23,7 +23,7 @@ podTemplate(label: label, yaml: """
   ) {
     node(label) {
         stage('setup') {
-            git url: 'https://ds1.capetown.gov.za/ds_gitlab/OPM/airflow-datapipelines.git', branch: "airflow2"
+            git branch: 'airflow2', credentialsId: 'jenkins-user', url: 'https://ds1.capetown.gov.za/ds_gitlab/OPM/airflow-datapipeline.git'
         }
         stage('kubernetes-v2') {
             retry(100) {
@@ -33,7 +33,7 @@ podTemplate(label: label, yaml: """
                         sh '''
                         ./bin/buildkit-docker.sh ${OPM_DATA_USER} ${OPM_DATA_PASSWORD} \\
                                                  ${DOCKER_USER} ${DOCKER_PASS} \\
-                                                 "${PWD}/base" \\
+                                                 "${PWD}" \\
                                                  "docker.io/cityofcapetown/airflow:kubernetes-v2"
                         sleep 60
                         '''
