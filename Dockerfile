@@ -1,54 +1,18 @@
-FROM docker.io/puckel/docker-airflow:1.10.3
+FROM apache/airflow:2.2.3-python3.8
 
-LABEL authors="Gordon Inggs and Riaz Arbi"
-
-# Changing back to root
+# Change container image to root user to allow for global
+# installation of software
 USER root
-RUN echo AIRFLOW_VERSION
-ARG AIRFLOW_VERSION=1.10.3
+RUN apt-get update && apt-get install -y git \
+    && pip3 install --upgrade pip && apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Adding utility packages
-RUN set -ex && \
-  apt-get update -yqq && \
-  apt-get upgrade -yqq && \
-  apt-get install -yqq \
-  apt-utils 
-
-# Setting the timezone
-ENV TZ "Africa/Johannesburg"
-RUN echo $TZ > /etc/timezone && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
-  rm /etc/localtime && \
-  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-  dpkg-reconfigure -f noninteractive tzdata
-
-ENV AIRFLOW__CORE__DEFAULT_TIMEZONE "Africa/Johannesburg"
-
-# Define en_ZA
-RUN DEBIAN_FRONTEND=noninteractive \
-  sed --in-place '/en_ZA.UTF-8/s/^# //' /etc/locale.gen && \
-  locale-gen en_ZA && \
-  locale-gen en_ZA.UTF-8 && \
-  dpkg-reconfigure --frontend=noninteractive locales && \
-  update-locale
-
-ENV LANGUAGE en_ZA.UTF-8
-ENV LANG en_ZA.UTF-8
-ENV LC_ALL en_ZA.UTF-8
-ENV LC_CTYPE en_ZA.UTF-8
-ENV LC_MESSAGES en_ZA.UTF-8
-
-# Installing kubernetes-specific python packages
-RUN pip install apache-airflow[kubernetes]==${AIRFLOW_VERSION} \
-    && pip install werkzeug==0.15.5 \
-    && pip install flask_bcrypt==0.7.1 \
-    && pip install Flask-OAuthlib==0.9.5 \
-    && pip install Flask-WTF==0.14.3 \
-    && pip install minio
-
-# Changing back to the airflow user
+# Install dependencies needed for OpenID connect authentication.
+# These pip, requests, and flasks-oidc. The packages are installed
+# within the user context.
 USER airflow
+COPY k8s/requirements.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
 
-# Unload examples
-ENV LOAD_EX "n"
+# Copy the OIDC webserver_config.py into the container's $AIRFLOW_HOME
+COPY k8s/webserver_config.py $AIRFLOW_HOME/webserver_config.py
