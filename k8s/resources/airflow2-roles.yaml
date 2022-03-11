@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: airflow-workers
+  name: airflow2-role
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "watch", "list", "create", "delete"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airflow2-role-bind
+  namespace: airflow-workers
+subjects:
+- kind: ServiceAccount 
+  name: airflow2-scheduler
+  namespace: airflow2
+roleRef:
+  kind: Role
+  name: airflow2-role
+  apiGroup: rbac.authorization.k8s.io

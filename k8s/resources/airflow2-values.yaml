@@ -1,0 +1,140 @@
+airflow:
+  service:
+    annotations: {}
+    type: ClusterIP
+    externalPort: 8080
+
+  webReplicas: 2 
+  initdb: true 
+  schedulerNumRuns: "-1"
+
+config:
+  webserver:
+    base_url: https://datascience.capetown.gov.za/airflow2
+
+images:
+  airflow:
+    repository: cityofcapetown/airflow
+    tag: kubernetes-v2
+    pullPolicy: Always
+
+nodeSelector:
+  workload: "interactive"
+
+env:
+  - name: AIRFLOW__CORE__LOAD_EXAMPLES
+    value: "False"
+  - name: AIRFLOW__EMAIL__EMAIL_BACKEND
+    value: "airflow.utils.email.send_email_smtp"
+  - name: AIRFLOW__SMTP__SMTP_HOST
+    value: "mobimail.capetown.gov.za"
+  - name: AIRFLOW__SMTP__SMTP_STARTTLS
+    value: "True"
+  - name: AIRFLOW__SMTP__SMTP_SSL
+    value: "False"
+  - name: AIRFLOW__SMTP__SMTP_PORT
+    value: "25"
+  - name: AIRFLOW__SMTP__SMTP_MAIL_FROM
+    value: "airflow-admin@capetown.gov.za"
+  # - name: ALLOWED_GITLAB_GROUPS
+  #  value: "OPM"
+  - name: AIRFLOW__API__AUTH_BACKEND
+    value: "airflow.api.auth.backend.basic_auth"
+  - name: AIRFLOW_WWW_USER_USERNAME
+    value: "airflow"
+  - name: AIRFLOW_WWW_USER_PASSWORD
+    value: "example-password@gitlab-sso"
+
+extraEnv: |-
+  - name: AIRFLOW__CORE__FERNET_KEY
+    valueFrom:
+      secretKeyRef:
+        key: fernet_key
+        name: "airflow2-secrets"
+  - name: AIRFLOW__WEBSERVER__SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        key: webserver_secret_key
+        name: "airflow2-secrets"
+
+executor: LocalExecutor
+
+scheduler:
+  extraVolumeMounts:
+    - name: client-secret
+      mountPath: "/opt/airflow/client_secret.json"
+      subPath: client_secret.json
+      readOnly: true
+  extraVolumes:
+    - name: client-secret
+      secret:
+        secretName: "airflow2-secrets"
+        items:
+          - key: client_secret.json
+            path: client_secret.json
+
+webserver:
+  replicas: 2
+  readinessProbe:
+    periodSeconds: 10
+  extraVolumeMounts:
+    - name: client-secret
+      mountPath: "/opt/airflow/client_secret.json"
+      subPath: client_secret.json
+      readOnly: true
+  extraVolumes:
+    - name: client-secret
+      secret:
+        secretName: "airflow2-secrets"
+        items:
+          - key: client_secret.json
+            path: client_secret.json
+workers:
+  replicas: 0
+
+ingress:
+  enabled: true
+  web:
+    annotations: 
+      kubernetes.io/ingress.class: traefik
+      traefik.frontend.rule.type: PathPrefix
+    path: "/airflow2"
+
+statsd:
+  enabled: false
+
+rbac:
+  create: true 
+
+serviceAccount:
+  create: true 
+  name: airflow 
+
+logs:
+  persistence:
+    enabled: true
+    storageClassName: "nfs"
+  
+postgresql:
+  enabled: true
+  service:
+    port: 5432
+  postgresUser: postgres
+  postgresPassword: airflow
+  postgresDatabase: airflow
+  persistence:
+    enabled: true
+    storageClass: "nfs"
+
+redis:
+  enabled: false
+
+dags:
+  persistence:
+    enabled: false 
+  gitSync:
+    enabled: true
+    repo: "https://ds1.capetown.gov.za/ds_gitlab/OPM/airflow-dags.git"
+    branch: v2 
+    subPath: ""
+    wait: 60
