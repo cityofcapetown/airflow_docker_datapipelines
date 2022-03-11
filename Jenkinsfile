@@ -23,7 +23,7 @@ podTemplate(label: label, yaml: """
   ) {
     node(label) {
         stage('setup') {
-            git branch: 'airflow2', credentialsId: 'jenkins-user', url: 'https://ds1.capetown.gov.za/ds_gitlab/OPM/airflow-datapipeline.git'
+            git credentialsId: 'jenkins-user', url: 'https://ds1.capetown.gov.za/ds_gitlab/OPM/airflow-datapipeline.git'
         }
         stage('kubernetes-v2') {
             retry(100) {
