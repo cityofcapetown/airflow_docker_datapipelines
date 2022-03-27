@@ -42,6 +42,7 @@ class AuthOIDCView(AuthOIDView):
         @self.appbuilder.sm.oid.require_login
         def handle_login():
             user = sm.auth_user_oid(oidc.user_getfield(EMAIL_FIELD))
+            logger.debug(f"{user=}")
 
             # Group membership required
             if ALLOWED_GITLAB_GROUPS:
@@ -57,6 +58,7 @@ class AuthOIDCView(AuthOIDView):
 
             # Create user (if it doesn't already exist)
             if user is None:
+                logger.debug("User not found, creating new user...")
                 info = oidc.user_getinfo([
                     NICKNAME_OIDC_FIELD,
                     FULL_NAME_OIDC_FIELD,
@@ -66,6 +68,7 @@ class AuthOIDCView(AuthOIDView):
                     "profile"
                 ])
                 full_name = info.get(FULL_NAME_OIDC_FIELD)
+                logger.debug(f"{info=} -> {full_name=}")
                 if full_name is not None and " " in full_name:
                     full_name = full_name.split(" ")
                     first_name = full_name[0]
